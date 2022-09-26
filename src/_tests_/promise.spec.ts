@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { MyPromise } from "../promise";
 
-describe("Basic Function", () => {
+describe("Promise Basic", () => {
   // 1. 创建一个 MyPromise 类
   it("happy path", () => {
     const p = new MyPromise(() => {});
@@ -9,39 +9,28 @@ describe("Basic Function", () => {
     expect(p).toBeInstanceOf(MyPromise);
   });
 
-  // 2. 实现 then 方法
-  it.skip("then function", () => {
-    const p = new MyPromise((resolve: any, reject: any) => {
+  // 2. 实现 then basic
+  it("then basic", () => {
+    // 第一个参数 resolve 回调
+    const p1 = new MyPromise((resolve: any) => {
       resolve("resolve");
+    });
+
+    let result;
+    p1.then((resolveVal: any) => {
+      result = resolveVal;
+    });
+    expect(result).toBe("resolve");
+
+    // 第二个参数 reject 回调
+    const p2 = new MyPromise((resolve, reject: any) => {
       reject("reject");
     });
 
-    let result, reject;
-    // 第一个参数 resolve 回调
-    p.then((resolveVal: any) => {
-      result = resolveVal;
-    });
-
-    expect(result).toBe("resolve");
-
-    // 第二个参数 reject 回调
-    p.then(null, (rejectVal: any) => {
+    let reject;
+    p2.then(null, (rejectVal: any) => {
       reject = rejectVal;
     });
-
-    expect(reject).toBe("reject");
-
-    // 第二个参数 reject 回调
-    p.then(
-      (resolveVal: any) => {
-        result = resolveVal;
-      },
-      (rejectVal: any) => {
-        reject = rejectVal;
-      },
-    );
-
-    expect(result).toBe("resolve");
     expect(reject).toBe("reject");
   });
 
@@ -52,20 +41,45 @@ describe("Basic Function", () => {
       reject("reject");
     });
 
-    let result, reject;
+    let resolve, reject;
     const resoleCb = vi.fn((resolveVal: any) => {
-      result = resolveVal;
+      resolve = resolveVal;
     });
     const rejectCb = vi.fn((rejectVal: any) => {
       reject = rejectVal;
     });
     p.then(resoleCb, rejectCb);
 
-    expect(result).toBe("resolve");
+    expect(resolve).toBe("resolve");
     expect(reject).toBe(undefined);
     expect(resoleCb).toHaveBeenCalled();
     expect(rejectCb).not.toHaveBeenCalled();
   });
 
-  // 4. then 方法等 Promise 状态变为已处理才执行
+  // 4. then 的回调方法等 Promise 状态变为已处理才执行
+  it.only("then async", async () => {
+    vi.useFakeTimers();
+
+    const p = new MyPromise((resolve: any, reject: any) => {
+      setTimeout(() => {
+        resolve("resolve");
+        reject("reject");
+      }, 500);
+    });
+
+    let resolve, reject;
+    const resoleCb = vi.fn((resolveVal: any) => {
+      resolve = resolveVal;
+    });
+    const rejectCb = vi.fn((rejectVal: any) => {
+      reject = rejectVal;
+    });
+    p.then(resoleCb, rejectCb);
+
+    vi.advanceTimersByTime(500);
+    expect(resolve).toBe("resolve");
+    expect(reject).toBe(undefined);
+    expect(resoleCb).toHaveBeenCalled();
+    expect(rejectCb).not.toHaveBeenCalled();
+  });
 });
