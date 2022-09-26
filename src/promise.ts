@@ -80,6 +80,7 @@ function progressThen(
   result: any,
   thenMap: Map<string, any>,
 ) {
+  // 根据 PromiseState 判断 执行器 是异步执行还是同步执行，然后对应做不同处理
   // 如果 Promise 状态是已处理状态，同步处理直接执行回调，否则异步处理把回调函数存起来在处理函数中执行
   if (promiseState === processedState) {
     console.log("同步执行" + key);
