@@ -1,0 +1,17 @@
+{
+  "name": "interview-handwriting",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^4.6.4",
+    "unplugin-auto-import": "^0.11.2",
+    "vite": "^3.1.0",
+    "vitest": "^0.23.4"
+  }
+}
