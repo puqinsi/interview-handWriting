@@ -87,7 +87,7 @@ describe("Promise Basic", () => {
   });
 
   // 3. catch 方法
-  describe.only("catch", () => {
+  describe("catch", () => {
     // 3.1 catch basic
     it("catch basic", () => {
       // 第一个参数 resolve 回调
@@ -122,4 +122,7 @@ describe("Promise Basic", () => {
       expect(result).toBe("reject");
     });
   });
+
+  // TODO 链式调用
+  // describe("")
 });

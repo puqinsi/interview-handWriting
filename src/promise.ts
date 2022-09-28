@@ -19,11 +19,11 @@ export class MyPromise {
   private resolveValue: any; // 已完成的返回值，同步执行时 then 函数会调用
   private rejectValue: any; // 已失败的返回值，同步执行时 then 函数会调用
   private PromiseState: any; // Promise 状态 未处理：Pending（进行中）；已处理：FulFilled 已完成，Rejected 已失败；
-  private thenMap: Map<string, any>; // 存储 then 的回调函数，异步时处理函数会调用
+  private callBackMap: Map<string, any>; // 存储回调函数，异步时处理函数会调用
   constructor(executor: Executor) {
     this.executor = executor;
     this.PromiseState = StateTypes.PENDING;
-    this.thenMap = new Map();
+    this.callBackMap = new Map();
     this.executor(this.resolve.bind(this), this.reject.bind(this));
   }
 
@@ -34,7 +34,7 @@ export class MyPromise {
       this.PromiseState = StateTypes.FulFilled;
       this.resolveValue = value;
 
-      triggerCallBack(this.thenMap, CallBackTypes.RESOLVE, value);
+      triggerCallBack(this.callBackMap, CallBackTypes.RESOLVE, value);
     }
   }
 
@@ -45,7 +45,7 @@ export class MyPromise {
       this.PromiseState = StateTypes.REJECTED;
       this.rejectValue = value;
 
-      triggerCallBack(this.thenMap, CallBackTypes.REJECT, value);
+      triggerCallBack(this.callBackMap, CallBackTypes.REJECT, value);
     }
   }
 
@@ -74,6 +74,8 @@ export class MyPromise {
     }
 
     progressRejectCb(this, rejectCb);
+
+    return this;
   }
 }
 
@@ -87,7 +89,7 @@ function progressResolveCb(instance: any, callBack: CallBack) {
 
 // 回调函数处理
 function progressCallBack(instance: any, key: any, callBack: CallBack) {
-  const { PromiseState, thenMap, resolveValue, rejectValue } = instance;
+  const { PromiseState, callBackMap, resolveValue, rejectValue } = instance;
 
   let processedState, result;
   if (key === CallBackTypes.RESOLVE) {
@@ -104,22 +106,22 @@ function progressCallBack(instance: any, key: any, callBack: CallBack) {
     console.log("同步执行" + key);
     callBack(result);
   } else {
-    let cbSet = thenMap.get(key);
-    if (!cbSet) {
-      cbSet = new Set();
-      thenMap.set(key, cbSet);
+    let callBackSet = callBackMap.get(key);
+    if (!callBackSet) {
+      callBackSet = new Set();
+      callBackMap.set(key, callBackSet);
     }
 
-    cbSet.add(callBack);
+    callBackSet.add(callBack);
   }
 }
 
 // 处理函数触发收集的回调函数
-function triggerCallBack(thenMap: Map<string, any>, key: any, result: any) {
-  const cbSet = thenMap.get(key);
-  if (cbSet) {
+function triggerCallBack(callBackMap: Map<string, any>, key: any, result: any) {
+  const callBackSet = callBackMap.get(key);
+  if (callBackSet) {
     console.log("异步执行" + key);
-    for (const cb of cbSet) {
+    for (const cb of callBackSet) {
       cb(result);
     }
   }
