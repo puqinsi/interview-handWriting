@@ -24,7 +24,12 @@ export class MyPromise {
     this.executor = executor;
     this.PromiseState = StateTypes.PENDING;
     this.callBackMap = new Map();
-    this.executor(this.resolve.bind(this), this.reject.bind(this));
+
+    try {
+      this.executor(this.resolve.bind(this), this.reject.bind(this));
+    } catch (error: any) {
+      this.reject({ message: error.message });
+    }
   }
 
   // 已完成-处理函数
@@ -47,6 +52,24 @@ export class MyPromise {
 
       triggerCallBack(this.callBackMap, CallBackTypes.REJECT, value);
     }
+  }
+
+  static resolve(value: any) {
+    console.log("static resolve");
+    const p = new MyPromise((resolve: any) => {
+      resolve(value);
+    });
+
+    return p;
+  }
+
+  static reject(value: any) {
+    console.log("static reject");
+    const p = new MyPromise((resolve: any, reject: any) => {
+      reject(value);
+    });
+
+    return p;
   }
 
   then(resolveCb?: CallBack | null, rejectCb?: CallBack | null) {
