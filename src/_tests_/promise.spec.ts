@@ -1,4 +1,3 @@
-import { describe, expect, it, test, vi } from "vitest";
 import { MyPromise } from "../promise";
 
 describe("Promise Basic", () => {
@@ -163,7 +162,7 @@ describe("Promise Basic", () => {
   });
 
   // 5. 捕获执行器错误
-  test.only("catch executor error", () => {
+  test("catch executor error", () => {
     const p = new MyPromise((resolve: any, reject: any) => {
       throw new Error("something error");
     });
