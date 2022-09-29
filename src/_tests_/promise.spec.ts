@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, test, vi } from "vitest";
 import { MyPromise } from "../promise";
 
 describe("Promise Basic", () => {
@@ -44,17 +44,17 @@ describe("Promise Basic", () => {
       });
 
       let resolve, reject;
-      const resoleCb = vi.fn((resolveVal: any) => {
+      const resolveCb = vi.fn((resolveVal: any) => {
         resolve = resolveVal;
       });
       const rejectCb = vi.fn((rejectVal: any) => {
         reject = rejectVal;
       });
-      p.then(resoleCb, rejectCb);
+      p.then(resolveCb, rejectCb);
 
       expect(resolve).toBe("resolve");
       expect(reject).toBe(undefined);
-      expect(resoleCb).toHaveBeenCalled();
+      expect(resolveCb).toHaveBeenCalled();
       expect(rejectCb).not.toHaveBeenCalled();
     });
 
@@ -70,18 +70,18 @@ describe("Promise Basic", () => {
       });
 
       let resolve, reject;
-      const resoleCb = vi.fn((resolveVal: any) => {
+      const resolveCb = vi.fn((resolveVal: any) => {
         resolve = resolveVal;
       });
       const rejectCb = vi.fn((rejectVal: any) => {
         reject = rejectVal;
       });
-      p.then(resoleCb, rejectCb);
+      p.then(resolveCb, rejectCb);
 
       vi.advanceTimersByTime(500);
       expect(resolve).toBe("resolve");
       expect(reject).toBe(undefined);
-      expect(resoleCb).toHaveBeenCalled();
+      expect(resolveCb).toHaveBeenCalled();
       expect(rejectCb).not.toHaveBeenCalled();
     });
   });
@@ -123,6 +123,56 @@ describe("Promise Basic", () => {
     });
   });
 
-  // TODO 链式调用
-  // describe("")
+  // 4. 创建已处理的 promise
+  describe("create processed state", () => {
+    it("create FulFilled state", () => {
+      const p = MyPromise.resolve("resolve");
+
+      let result;
+      p.then((resolveVal: any) => {
+        result = resolveVal;
+      });
+
+      expect(result).toBe("resolve");
+    });
+
+    it("create Rejected state", () => {
+      const p = MyPromise.reject("reject");
+
+      let result;
+      const resolveCb = vi.fn((value: any) => {
+        result = value;
+      });
+      const rejectCb = vi.fn((value: any) => {
+        result = value;
+      });
+      p.then(resolveCb, rejectCb);
+
+      let reject;
+      const rejectCb1 = vi.fn((value: any) => {
+        reject = value;
+      });
+      p.catch(rejectCb1);
+
+      expect(result).toBe("reject");
+      expect(reject).toBe("reject");
+      expect(resolveCb).not.toHaveBeenCalled();
+      expect(rejectCb).toHaveBeenCalled();
+      expect(rejectCb1).toHaveBeenCalled();
+    });
+  });
+
+  // 5. 捕获执行器错误
+  test.only("catch executor error", () => {
+    const p = new MyPromise((resolve: any, reject: any) => {
+      throw new Error("something error");
+    });
+
+    let result: any;
+    p.catch(value => {
+      result = value;
+    });
+
+    expect(result.message).toBe("something error");
+  });
 });
