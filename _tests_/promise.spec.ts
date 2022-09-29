@@ -1,4 +1,4 @@
-import { MyPromise } from "../promise";
+import { MyPromise } from "../src/promise";
 
 describe("Promise Basic", () => {
   // 1. 创建一个 MyPromise 类
