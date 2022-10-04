@@ -18,8 +18,9 @@ export class MyPromise {
   private executor: Executor; // 执行器,用于创建未处理的 Promise
   private resolveValue: any; // 已完成的返回值，同步执行时 then 函数会调用
   private rejectValue: any; // 已失败的返回值，同步执行时 then 函数会调用
-  private PromiseState: any; // Promise 状态 未处理：Pending（进行中）；已处理：FulFilled 已完成，Rejected 已失败；
   private callBackMap: Map<string, any>; // 存储回调函数，异步时处理函数会调用
+  private reProcess: any = {};
+  private PromiseState: any; // Promise 状态 未处理：Pending（进行中）；已处理：FulFilled 已完成，Rejected 已失败；
   constructor(executor: Executor) {
     this.executor = executor;
     this.PromiseState = StateTypes.PENDING;
@@ -39,7 +40,7 @@ export class MyPromise {
       this.PromiseState = StateTypes.FulFilled;
       this.resolveValue = value;
 
-      triggerCallBack(this.callBackMap, CallBackTypes.RESOLVE, value);
+      triggerCallBack(CallBackTypes.RESOLVE, value, this);
     }
   }
 
@@ -50,7 +51,7 @@ export class MyPromise {
       this.PromiseState = StateTypes.REJECTED;
       this.rejectValue = value;
 
-      triggerCallBack(this.callBackMap, CallBackTypes.REJECT, value);
+      triggerCallBack(CallBackTypes.REJECT, value, this);
     }
   }
 
@@ -72,47 +73,79 @@ export class MyPromise {
     return p;
   }
 
-  then(resolveCb?: CallBack | null, rejectCb?: CallBack | null) {
+  then(resolveCb?: any, rejectCb?: any) {
     console.log("Promise then");
     if (!resolveCb && !rejectCb) {
       console.warn("缺少 Promise then 的回调函数");
       return;
     }
 
+    // 返回 新Promise，处理函数绑定到原来回调函数上，状态可以跟 原Promise 同步。
+    const rp = createReturnPromise(this);
+
     if (resolveCb) {
-      progressResolveCb(this, resolveCb);
+      progressResolveCb(resolveCb, this);
     }
 
     if (rejectCb) {
-      progressRejectCb(this, rejectCb);
+      progressRejectCb(rejectCb, this);
     }
 
-    return this;
+    return rp;
   }
 
-  catch(rejectCb?: CallBack | null) {
+  catch(rejectCb?: any) {
+    console.log("Promise catch");
     if (!rejectCb) {
       console.warn("缺少 Promise catch 的回调");
       return;
     }
 
-    progressRejectCb(this, rejectCb);
+    const rp = createReturnPromise(this);
 
-    return this;
+    progressRejectCb(rejectCb, this);
+
+    return rp;
   }
 }
 
-function progressRejectCb(instance: any, callBack: CallBack) {
-  progressCallBack(instance, CallBackTypes.REJECT, callBack);
+function createReturnPromise(instance: any) {
+  let p = new MyPromise((resolve: any, reject: any) => {
+    instance.reProcess[CallBackTypes.RESOLVE] = (value: any) => {
+      // 如果值是返回的 Promise
+      if (value instanceof MyPromise) {
+        const rePromise = value;
+        rePromise.then(
+          (reValue: any) => {
+            resolve(reValue);
+          },
+          (reValue: any) => {
+            reject(reValue);
+          },
+        );
+      } else {
+        resolve(value);
+      }
+    };
+
+    instance.reProcess[CallBackTypes.REJECT] = (error: any) =>
+      reject({ message: error.message });
+  });
+  return p;
 }
 
-function progressResolveCb(instance: any, callBack: CallBack) {
-  progressCallBack(instance, CallBackTypes.RESOLVE, callBack);
+function progressRejectCb(callBack: any, instance: any) {
+  progressCallBack(CallBackTypes.REJECT, callBack, instance);
+}
+
+function progressResolveCb(callBack: any, instance: any) {
+  progressCallBack(CallBackTypes.RESOLVE, callBack, instance);
 }
 
 // 回调函数处理
-function progressCallBack(instance: any, key: any, callBack: CallBack) {
-  const { PromiseState, callBackMap, resolveValue, rejectValue } = instance;
+function progressCallBack(key: any, callBack: any, instance: any) {
+  const { PromiseState, callBackMap, resolveValue, rejectValue, reProcess } =
+    instance;
 
   let processedState, result;
   if (key === CallBackTypes.RESOLVE) {
@@ -127,7 +160,7 @@ function progressCallBack(instance: any, key: any, callBack: CallBack) {
   // 如果 Promise 状态是已处理状态，同步处理直接执行回调，否则异步处理把回调函数存起来在处理函数中执行
   if (PromiseState === processedState) {
     console.log("同步执行" + key);
-    callBack(result);
+    executeCallBack(callBack, result, reProcess, instance);
   } else {
     let callBackSet = callBackMap.get(key);
     if (!callBackSet) {
@@ -140,12 +173,28 @@ function progressCallBack(instance: any, key: any, callBack: CallBack) {
 }
 
 // 处理函数触发收集的回调函数
-function triggerCallBack(callBackMap: Map<string, any>, key: any, result: any) {
+function triggerCallBack(key: any, result: any, instance: any) {
+  const { callBackMap, reProcess } = instance;
   const callBackSet = callBackMap.get(key);
   if (callBackSet) {
     console.log("异步执行" + key);
     for (const cb of callBackSet) {
-      cb(result);
+      executeCallBack(cb, result, reProcess, instance);
     }
+  }
+}
+
+function executeCallBack(
+  callBack: any,
+  result: any,
+  reProcess: any,
+  instance: any,
+) {
+  try {
+    const reValue: any = callBack(result);
+
+    reProcess[CallBackTypes.RESOLVE](reValue ? reValue : instance.resolveValue);
+  } catch (error) {
+    reProcess[CallBackTypes.REJECT](error);
   }
 }
