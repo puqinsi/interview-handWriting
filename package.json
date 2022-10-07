@@ -1,7 +1,7 @@
 {
   "name": "interview-handwriting",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "test": "vitest",
@@ -12,7 +12,6 @@
   },
   "devDependencies": {
     "typescript": "^4.6.4",
-    "unplugin-auto-import": "^0.11.2",
     "vite": "^3.1.0",
     "vitest": "^0.23.4"
   }
