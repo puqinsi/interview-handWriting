@@ -19,7 +19,7 @@ export class MyPromise {
   private resolveValue: any; // 已完成的返回值，同步执行时 then 函数会调用
   private rejectValue: any; // 已失败的返回值，同步执行时 then 函数会调用
   private callBackMap: Map<string, any>; // 存储回调函数，异步时处理函数会调用
-  private reProcess: any = {};
+  private reProcessMap: any = []; // 每项是返回的 promise 的处理函数对象
   private PromiseState: any; // Promise 状态 未处理：Pending（进行中）；已处理：FulFilled 已完成，Rejected 已失败；
   constructor(executor: Executor) {
     this.executor = executor;
@@ -73,6 +73,40 @@ export class MyPromise {
     return p;
   }
 
+  static all(allPromise: any[]) {
+    const p = new MyPromise((resolve: any, reject: any) => {
+      if (!allPromise || !Array.isArray(allPromise)) {
+        throw new Error(`${allPromise} is not iterable`);
+      } else {
+        if (allPromise.length === 0) {
+          resolve([]);
+        } else {
+          // 按顺序执行传入的 Promise，核心：利用串联的 Promise
+          settleAllPromise(allPromise, resolve, reject);
+        }
+      }
+    });
+
+    return p;
+  }
+
+  static race(allPromise: any[]) {
+    const p = new MyPromise((resolve: any, reject: any) => {
+      if (!allPromise || !Array.isArray(allPromise)) {
+        throw new Error(`${allPromise} is not iterable`);
+      } else {
+        if (allPromise.length === 0) {
+          resolve([]);
+        } else {
+          // 按顺序执行传入的 Promise，核心：利用串联的 Promise
+          settleRacePromise(allPromise, resolve, reject);
+        }
+      }
+    });
+
+    return p;
+  }
+
   then(resolveCb?: any, rejectCb?: any) {
     console.log("Promise then");
     if (!resolveCb && !rejectCb) {
@@ -80,15 +114,15 @@ export class MyPromise {
       return;
     }
 
-    // 返回 新Promise，处理函数绑定到原来回调函数上，状态可以跟 原Promise 同步。
+    // 返回 新Promise，处理函数绑定到当前 Promise 上，状态可以跟 原Promise 同步。
     const rp = createReturnPromise(this);
 
     if (resolveCb) {
-      progressResolveCb(resolveCb, this);
+      handleResolveCb(resolveCb, this);
     }
 
     if (rejectCb) {
-      progressRejectCb(rejectCb, this);
+      handleRejectCb(rejectCb, this);
     }
 
     return rp;
@@ -103,15 +137,68 @@ export class MyPromise {
 
     const rp = createReturnPromise(this);
 
-    progressRejectCb(rejectCb, this);
+    handleRejectCb(rejectCb, this);
 
     return rp;
   }
 }
 
+function settleRacePromise(allPromise: any[], resolve: any, reject: any) {
+  let isSettled = false;
+
+  for (let i = 0; i < allPromise.length; i++) {
+    allPromise[i].then(
+      (value: any) => {
+        if (isSettled) return;
+        resolve(value);
+        isSettled = true;
+      },
+      (value: any) => {
+        if (isSettled) return;
+        reject(value);
+        isSettled = true;
+      },
+    );
+    if (isSettled) break;
+  }
+}
+
+function settleAllPromise(allPromise: any[], resolve: any, reject: any) {
+  const len = allPromise.length;
+  let allRejected = false;
+
+  // 判断是否全处理完成
+  const allValue: any[] = [];
+  let promise: any = allPromise[0];
+  for (let i = 1; i <= len; i++) {
+    promise = promise.then((value: any) => {
+      if (allRejected) return;
+      allValue.push(value);
+      if (i < len) {
+        return allPromise[i];
+      } else {
+        resolve(allValue);
+      }
+    });
+    if (allRejected) break;
+  }
+
+  // 判断是否有处理失败
+  for (let i = 0; i < len; i++) {
+    const promise = allPromise[i];
+    promise.catch((value: any) => {
+      if (allRejected) return;
+      reject(value);
+      allRejected = true;
+    });
+    if (allRejected) break;
+  }
+}
+
 function createReturnPromise(instance: any) {
   let p = new MyPromise((resolve: any, reject: any) => {
-    instance.reProcess[CallBackTypes.RESOLVE] = (value: any) => {
+    const reProcess: any = {};
+    reProcess[CallBackTypes.RESOLVE] = (value: any) => {
       // 如果值是返回的 Promise
       if (value instanceof MyPromise) {
         const rePromise = value;
@@ -128,24 +215,25 @@ function createReturnPromise(instance: any) {
       }
     };
 
-    instance.reProcess[CallBackTypes.REJECT] = (error: any) =>
+    reProcess[CallBackTypes.REJECT] = (error: any) =>
       reject({ message: error.message });
+
+    instance.reProcessMap.push(reProcess);
   });
   return p;
 }
 
-function progressRejectCb(callBack: any, instance: any) {
-  progressCallBack(CallBackTypes.REJECT, callBack, instance);
+function handleRejectCb(callBack: any, instance: any) {
+  handleCallBack(CallBackTypes.REJECT, callBack, instance);
 }
 
-function progressResolveCb(callBack: any, instance: any) {
-  progressCallBack(CallBackTypes.RESOLVE, callBack, instance);
+function handleResolveCb(callBack: any, instance: any) {
+  handleCallBack(CallBackTypes.RESOLVE, callBack, instance);
 }
 
 // 回调函数处理
-function progressCallBack(key: any, callBack: any, instance: any) {
-  const { PromiseState, callBackMap, resolveValue, rejectValue, reProcess } =
-    instance;
+function handleCallBack(key: any, callBack: any, instance: any) {
+  const { PromiseState, callBackMap, resolveValue, rejectValue } = instance;
 
   let processedState, result;
   if (key === CallBackTypes.RESOLVE) {
@@ -160,7 +248,7 @@ function progressCallBack(key: any, callBack: any, instance: any) {
   // 如果 Promise 状态是已处理状态，同步处理直接执行回调，否则异步处理把回调函数存起来在处理函数中执行
   if (PromiseState === processedState) {
     console.log("同步执行" + key);
-    executeCallBack(callBack, result, reProcess, instance);
+    executeCallBack(callBack, result, instance);
   } else {
     let callBackSet = callBackMap.get(key);
     if (!callBackSet) {
@@ -174,27 +262,29 @@ function progressCallBack(key: any, callBack: any, instance: any) {
 
 // 处理函数触发收集的回调函数
 function triggerCallBack(key: any, result: any, instance: any) {
-  const { callBackMap, reProcess } = instance;
+  const { callBackMap } = instance;
   const callBackSet = callBackMap.get(key);
   if (callBackSet) {
     console.log("异步执行" + key);
     for (const cb of callBackSet) {
-      executeCallBack(cb, result, reProcess, instance);
+      executeCallBack(cb, result, instance);
     }
   }
 }
 
-function executeCallBack(
-  callBack: any,
-  result: any,
-  reProcess: any,
-  instance: any,
-) {
+function executeCallBack(callBack: any, result: any, instance: any) {
+  const { reProcessMap, resolveValue } = instance;
   try {
     const reValue: any = callBack(result);
 
-    reProcess[CallBackTypes.RESOLVE](reValue ? reValue : instance.resolveValue);
+    for (let i = 0; i < reProcessMap.length; i++) {
+      const reProcess = reProcessMap[i];
+      reProcess[CallBackTypes.RESOLVE](reValue ? reValue : resolveValue);
+    }
   } catch (error) {
-    reProcess[CallBackTypes.REJECT](error);
+    for (let i = 0; i < reProcessMap.length; i++) {
+      const reProcess = reProcessMap[i];
+      reProcess[CallBackTypes.REJECT](error);
+    }
   }
 }

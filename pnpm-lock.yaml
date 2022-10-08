@@ -2,10 +2,12 @@ lockfileVersion: 5.4
 
 specifiers:
   typescript: ^4.8.3
+  vite: ^3.1.6
   vitest: ^0.24.0
 
 devDependencies:
   typescript: 4.8.3
+  vite: 3.1.6
   vitest: 0.24.0
 
 packages:
