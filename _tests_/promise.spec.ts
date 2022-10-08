@@ -179,7 +179,7 @@ describe("Promise", () => {
   });
 
   /* 复合功能 */
-  // 串联
+  // 串联的 Promise
   describe("series Promise", () => {
     // 串联 & 无返回
     describe("series basic", () => {
@@ -196,6 +196,58 @@ describe("Promise", () => {
           result2 = "result2";
         });
 
+        expect(result1).toBe("result1");
+        expect(result2).toBe("result2");
+      });
+
+      // 1.1 async then -> then
+      it("async then chain then", async () => {
+        vi.useFakeTimers();
+
+        const p: any = new MyPromise((resolve: any) => {
+          setTimeout(() => {
+            resolve();
+          }, 500);
+        });
+
+        let result1, result2;
+        p.then(() => {
+          result1 = "result1";
+        }).then(() => {
+          result2 = "result2";
+        });
+
+        vi.advanceTimersByTime(500);
+        expect(result1).toBe("result1");
+        expect(result2).toBe("result2");
+      });
+
+      // TODO 1.2 async multiple then -> then
+      it.only("async then chain then", async () => {
+        vi.useFakeTimers();
+
+        const p: any = new MyPromise((resolve: any) => {
+          setTimeout(() => {
+            resolve();
+          }, 500);
+        });
+
+        let result1, result2;
+        p.then(() => {
+          return "result1";
+        }).then((value: any) => {
+          console.log("1--------", value);
+          result1 = value;
+        });
+
+        p.then(() => {
+          return "result2";
+        }).then((value: any) => {
+          console.log("2--------", value);
+          result2 = value;
+        });
+
+        vi.advanceTimersByTime(500);
         expect(result1).toBe("result1");
         expect(result2).toBe("result2");
       });
@@ -346,5 +398,213 @@ describe("Promise", () => {
     });
   });
 
-  // TODO 响应多个 Promise
+  // 响应多个 Promise
+  describe("react multiple promise", () => {
+    describe("all", () => {
+      it("all watched promise Fulfilled return resolved", () => {
+        const p1 = new MyPromise((resolve: any, reject: any) => {
+          resolve(1);
+        });
+
+        const p2 = new MyPromise((resolve: any, reject: any) => {
+          resolve(2);
+        });
+
+        const p3 = new MyPromise((resolve: any, reject: any) => {
+          resolve(3);
+        });
+
+        const p4: any = MyPromise.all([p1, p2, p3]);
+
+        let result;
+        p4.then((value: any[]) => {
+          result = value;
+        });
+
+        expect(result).toStrictEqual([1, 2, 3]);
+      });
+
+      it("all watched async promise Fulfilled return resolved", () => {
+        vi.useFakeTimers();
+        const p1 = new MyPromise((resolve: any, reject: any) => {
+          resolve(1);
+        });
+
+        const p2 = new MyPromise((resolve: any, reject: any) => {
+          setTimeout(() => {
+            resolve(2);
+          }, 500);
+        });
+
+        const p3 = new MyPromise((resolve: any, reject: any) => {
+          resolve(3);
+        });
+
+        const p4: any = MyPromise.all([p1, p2, p3]);
+
+        let result;
+        p4.then((value: any[]) => {
+          result = value;
+        });
+
+        vi.advanceTimersByTime(500);
+        expect(result).toStrictEqual([1, 2, 3]);
+      });
+
+      it("one watched promise Rejected return rejected", () => {
+        const p1 = new MyPromise((resolve: any, reject: any) => {
+          resolve(1);
+        });
+
+        const p2 = new MyPromise((resolve: any, reject: any) => {
+          resolve(2);
+        });
+
+        const p3 = new MyPromise((resolve: any, reject: any) => {
+          reject(3);
+        });
+
+        const p4: any = MyPromise.all([p1, p2, p3]);
+
+        let result;
+        p4.catch((value: any) => {
+          result = value;
+        });
+
+        expect(result).toStrictEqual(3);
+      });
+
+      it("multiple watched promise Rejected return the fast rejected", () => {
+        vi.useFakeTimers();
+        const p1 = new MyPromise((resolve: any, reject: any) => {
+          setTimeout(() => {
+            resolve(1);
+          }, 500);
+        });
+
+        const p2 = new MyPromise((resolve: any, reject: any) => {
+          setTimeout(() => {
+            reject(2);
+          }, 500);
+        });
+
+        const p3 = new MyPromise((resolve: any, reject: any) => {
+          reject(3);
+        });
+
+        const p4: any = MyPromise.all([p1, p2, p3]);
+
+        let result;
+        p4.catch((value: any) => {
+          result = value;
+        });
+
+        vi.advanceTimersByTime(500);
+        expect(result).toStrictEqual(3);
+      });
+    });
+
+    // one promise settled return the fast settled value
+    describe("race", () => {
+      it("Fulfilled first", () => {
+        const p1 = MyPromise.resolve(1);
+
+        const p2 = new MyPromise((resolve: any, reject: any) => {
+          reject(2);
+        });
+
+        const p3 = new MyPromise((resolve: any, reject: any) => {
+          resolve(3);
+        });
+
+        const p4 = new MyPromise((resolve: any, reject: any) => {
+          reject(4);
+        });
+
+        const p5: any = MyPromise.race([p1, p2, p3, p4]);
+
+        let resolveValue;
+        let rejectValue;
+        p5.then(
+          (value: any) => {
+            resolveValue = value;
+          },
+          (value: any) => {
+            rejectValue = value;
+          },
+        );
+
+        expect(resolveValue).toStrictEqual(1);
+        expect(rejectValue).toStrictEqual(undefined);
+      });
+
+      it("Rejected first", () => {
+        const p1 = new MyPromise((resolve: any, reject: any) => {
+          reject(1);
+        });
+
+        const p2 = MyPromise.resolve(2);
+
+        const p3 = new MyPromise((resolve: any, reject: any) => {
+          resolve(3);
+        });
+
+        const p4 = new MyPromise((resolve: any, reject: any) => {
+          reject(4);
+        });
+
+        const p5: any = MyPromise.race([p1, p2, p3, p4]);
+
+        let resolveValue;
+        let rejectValue;
+        p5.then(
+          (value: any) => {
+            resolveValue = value;
+          },
+          (value: any) => {
+            rejectValue = value;
+          },
+        );
+
+        expect(resolveValue).toStrictEqual(undefined);
+        expect(rejectValue).toStrictEqual(1);
+      });
+
+      it("async", async () => {
+        vi.useFakeTimers();
+        const p1 = new MyPromise((resolve: any, reject: any) => {
+          setTimeout(() => {
+            reject(1);
+          }, 500);
+        });
+
+        const p2 = MyPromise.resolve(2);
+
+        const p3 = new MyPromise((resolve: any, reject: any) => {
+          resolve(3);
+        });
+
+        const p4 = new MyPromise((resolve: any, reject: any) => {
+          reject(4);
+        });
+
+        const p5: any = MyPromise.race([p1, p2, p3, p4]);
+
+        let resolveValue;
+        let rejectValue;
+        p5.then(
+          (value: any) => {
+            resolveValue = value;
+          },
+          (value: any) => {
+            rejectValue = value;
+          },
+        );
+
+        vi.advanceTimersByTime(500);
+        expect(resolveValue).toStrictEqual(2);
+        expect(rejectValue).toStrictEqual(undefined);
+      });
+    });
+  });
 });
