@@ -1,4 +1,4 @@
-import { MyPromise } from "../src/promise";
+import MyPromise from "../src/promise";
 
 describe("Promise", () => {
   /* 基础功能 */
@@ -222,8 +222,8 @@ describe("Promise", () => {
         expect(result2).toBe("result2");
       });
 
-      // TODO 1.2 async multiple then -> then
-      it.only("async then chain then", async () => {
+      // 1.2 async multiple then -> then
+      it("async multiple then chain then", async () => {
         vi.useFakeTimers();
 
         const p: any = new MyPromise((resolve: any) => {
