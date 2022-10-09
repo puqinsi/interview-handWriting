@@ -46,20 +46,20 @@ class MyPromise {
 
   static resolve(value: any) {
     console.log("static resolve");
-    const p = new MyPromise((resolve: any) => {
+    const promise = new MyPromise((resolve: any) => {
       resolve(value);
     });
 
-    return p;
+    return promise;
   }
 
   static reject(value: any) {
     console.log("static reject");
-    const p = new MyPromise((resolve: any, reject: any) => {
+    const promise = new MyPromise((resolve: any, reject: any) => {
       reject(value);
     });
 
-    return p;
+    return promise;
   }
 
   static all(allPromise: any[]) {
@@ -82,7 +82,7 @@ class MyPromise {
     }
 
     // 返回 新Promise，处理函数绑定到当前 Promise 上，状态可以跟 原Promise 同步。
-    const rp = createReturnPromise(resolveCb, rejectCb);
+    const promise = createReturnPromise(resolveCb, rejectCb);
 
     if (resolveCb) {
       handleResolveCb(resolveCb, this);
@@ -92,7 +92,7 @@ class MyPromise {
       handleRejectCb(rejectCb, this);
     }
 
-    return rp;
+    return promise;
   }
 
   catch(rejectCb?: any) {
@@ -102,11 +102,11 @@ class MyPromise {
       return;
     }
 
-    const rp = createReturnPromise(undefined, rejectCb);
+    const promise = createReturnPromise(undefined, rejectCb);
 
     handleRejectCb(rejectCb, this);
 
-    return rp;
+    return promise;
   }
 }
 
