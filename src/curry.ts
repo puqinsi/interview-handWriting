@@ -59,6 +59,7 @@ export function curry3(fn: any) {
   }
 
   next.toString = () => result;
+  next.valueOf = () => result;
 
   return next;
 }
