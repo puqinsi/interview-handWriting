@@ -32,6 +32,11 @@ TDD 模式，把功能拆分为一个个单测实现，最终实现完整功能
 - [x] typeof
 - [x] new
 - [x] 柯里化
+- [x] Object.create
+- [x] Object.assign
+- [x] 深浅拷贝
+- [x] 防抖
+- [x] 节流
 
 ## 继承
 

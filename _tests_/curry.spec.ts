@@ -47,7 +47,7 @@ describe("curry", () => {
     const result2 = fn2(1)(2, 3);
     const fn3: any = curry3(add);
     const result3 = fn3(1, 2, 3);
-
+    // 不能全等
     expect(result1 == 6).toBe(true);
     expect(result2 == 6).toBe(true);
     expect(result3 == 6).toBe(true);
