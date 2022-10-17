@@ -274,6 +274,8 @@ function triggerCallBack(callBackType: any, value: any, instance: any) {
     for (const cb of callBackSet) {
       executeCallBack(cb, value, instance);
     }
+
+    callBackSet.clear();
   }
 }
 
