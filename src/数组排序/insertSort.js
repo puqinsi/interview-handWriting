@@ -5,7 +5,7 @@ function insertSort(arr) {
   let count = 0;
   const len = arr.length;
   for (let i = 1; i < len; i++) {
-    for (let j = i; j > 0; j--) {
+    for (let j = i; j >= 1; j--) {
       const current = arr[j];
       const previous = arr[j - 1];
       count++;
