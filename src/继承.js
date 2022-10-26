@@ -4,6 +4,7 @@ class SuperType {
     this.name = name;
     this.color = ["red", "green", "blue"];
   }
+
   sayName() {
     return this.name;
   }
@@ -13,6 +14,7 @@ class SubType extends SuperType {
     super(name);
     this.age = age;
   }
+
   sayAge() {
     return this.age;
   }
