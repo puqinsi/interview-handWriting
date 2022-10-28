@@ -1,4 +1,5 @@
 /* call */
+// 利用 this 指向调用者，来实现
 // 1. 第一个参数，调用该函数的对象，null时，this 指向 window
 // 2. 后续的所有参数,都会传给被调用的函数
 Function.prototype.myCall = function (context, ...args) {
@@ -42,6 +43,7 @@ Function.prototype.myCall = function (context, ...args) {
 // console.log(result6); // 5
 
 /* apply */
+// 利用 this 指向调用者，来实现
 // 1. 第一个参数，调用该函数的对象，null时，this 指向 window
 // 2. 第二个参数以数组形式提供,都会传给被调用的函数
 Function.prototype.myApply = function (context, args) {
