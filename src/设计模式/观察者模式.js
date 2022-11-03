@@ -11,7 +11,7 @@ class Subject {
   }
 
   remove(observer) {
-    this.observerList = this.observerList.filter(item => item === observer);
+    this.observerList = this.observerList.filter(item => item !== observer);
   }
 
   notify(...args) {

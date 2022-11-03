@@ -26,3 +26,21 @@ function* createIterator(items) {
     yield items[i];
   }
 }
+
+/* 可迭代对象 */
+const collection = {
+  items: [],
+  *[Symbol.iterator]() {
+    len = this.items.length;
+    for (let i = 0; i < len; i++) {
+      yield this.items[i];
+    }
+  },
+};
+
+collection.items.push(1);
+collection.items.push(2);
+collection.items.push(3);
+for (const value of collection) {
+  console.log(value);
+}
