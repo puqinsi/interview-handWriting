@@ -22,7 +22,7 @@ function quickSort(arr) {
     }
   }
 
-  return quickSort(left).concat(base, quickSort(right));
+  return [...quickSort(left), base, ...quickSort(right)];
 }
 
 const arr = [3, 5, 6, 4, 6, 7, 9, 8, 1];

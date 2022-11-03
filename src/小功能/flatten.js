@@ -33,7 +33,7 @@ console.log(flatten2(arr));
 function flatten3(arr, result = []) {
   return arr.reduce((brr, current) => {
     if (Array.isArray(current)) {
-      brr.concat(flatten3(current, brr));
+      flatten3(current, brr);
     } else {
       brr.push(current);
     }
