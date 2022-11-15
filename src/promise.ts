@@ -146,22 +146,15 @@ function handleMultiplePromise(allPromise: any[], settlePromise: any) {
 }
 
 function handleRacePromise(allPromise: any[], resolve: any, reject: any) {
-  let isSettled = false;
-
   for (let i = 0; i < allPromise.length; i++) {
     allPromise[i].then(
       (value: any) => {
-        if (isSettled) return;
         resolve(value);
-        isSettled = true;
       },
       (value: any) => {
-        if (isSettled) return;
         reject(value);
-        isSettled = true;
       },
     );
-    if (isSettled) break;
   }
 }
 
@@ -171,19 +164,18 @@ function handleAllPromise(allPromise: any[], resolve: any, reject: any) {
 
   // 判断是否全处理完成
   const allValue: any[] = [];
-  let promise: any = allPromise[0];
-  for (let i = 1; i <= len; i++) {
-    promise = promise.then((value: any) => {
+  function fullFiledFn(index: number) {
+    allPromise[index].then((value: any) => {
       if (allRejected) return;
       allValue.push(value);
-      if (i < len) {
-        return allPromise[i];
+      if (index < len - 1) {
+        fullFiledFn(index + 1);
       } else {
         resolve(allValue);
       }
     });
-    if (allRejected) break;
   }
+  fullFiledFn(0);
 
   // 判断是否有处理失败
   for (let i = 0; i < len; i++) {
@@ -193,7 +185,6 @@ function handleAllPromise(allPromise: any[], resolve: any, reject: any) {
       reject(value);
       allRejected = true;
     });
-    if (allRejected) break;
   }
 }
 
