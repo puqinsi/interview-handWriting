@@ -162,7 +162,7 @@ function handleAllPromise(allPromise: any[], resolve: any, reject: any) {
   const len = allPromise.length;
   let allRejected = false;
 
-  // 判断是否全处理完成
+  // 递归处理所有 promise
   const allValue: any[] = [];
   function fullFiledFn(index: number) {
     allPromise[index].then((value: any) => {
