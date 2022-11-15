@@ -15,6 +15,7 @@ Function.prototype.myBind = function (context, ...args) {
   return fnBind;
 };
 
+/* demo */
 // 1. 第一个参数是绑定对象，把函数绑定到该对象；
 var count = 1;
 const fn = function () {
