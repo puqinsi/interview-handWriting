@@ -531,7 +531,7 @@ describe("Promise", () => {
           },
           (value: any) => {
             rejectValue = value;
-          },
+          }
         );
 
         expect(resolveValue).toStrictEqual(1);
@@ -563,7 +563,7 @@ describe("Promise", () => {
           },
           (value: any) => {
             rejectValue = value;
-          },
+          }
         );
 
         expect(resolveValue).toStrictEqual(undefined);
@@ -598,7 +598,7 @@ describe("Promise", () => {
           },
           (value: any) => {
             rejectValue = value;
-          },
+          }
         );
 
         vi.advanceTimersByTime(500);
