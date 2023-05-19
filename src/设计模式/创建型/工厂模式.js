@@ -1,27 +1,50 @@
-// 核心：根据不同的条件，返回不同的对象
-// 优点: 让对象的调用者和对象创建过程分离，当对象调用者需要对象时，直接向工厂请求即可。
-let factory = function (role) {
-  function superman() {
-    this.name = "超级管理员";
-    this.role = ["修改密码", "发布消息", "查看主页"];
-  }
+/* 目的：实现无脑传参 */
 
-  function commonMan() {
-    this.name = "普通游客";
-    this.role = ["查看主页"];
-  }
+/* 方案 1 */
+function VipMan() {
+  this.identity = "vip";
+  this.role = ["修改密码", "发布消息", "查看主页"];
+}
 
-  let person;
-  switch (role) {
-    case "superman":
-      person = new superman();
+function CommonMan() {
+  this.identity = "common";
+  this.role = ["查看主页"];
+}
+/* 劣：对变化部分和不变部分没有分离 */
+function factory1(identity) {
+  let user;
+  switch (identity) {
+    case "vip":
+      user = new VipMan();
       break;
-    case "man":
-      person = new commonMan();
+    case "common":
+      user = new CommonMan();
       break;
     default:
       throw new Error("参数错误");
   }
 
-  return person;
-};
+  return user;
+}
+
+/* 方案 2 */
+function User(identity, role) {
+  this.identity = identity;
+  this.role = role;
+}
+/* 优：更好的封装了变化和不变的部分 */
+function factory(identity) {
+  switch (identity) {
+    case "vip":
+      role = ["修改密码", "发布消息", "查看主页"];
+      break;
+    case "common":
+      role = ["查看主页"];
+      break;
+    default:
+      role = [];
+      break;
+  }
+
+  return new User(identity, role);
+}
