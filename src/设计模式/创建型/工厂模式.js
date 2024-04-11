@@ -1,4 +1,4 @@
-/* 目的：实现无脑传参 */
+/* 目的：抽象不同构造函数的变与不变，实现无脑传参 */
 
 /* 简单工厂 */
 // 方案 1，劣：对变化部分和不变部分没有分离
@@ -35,6 +35,7 @@ function User(identity, role) {
 }
 
 function factory(identity) {
+  let role;
   switch (identity) {
     case "vip":
       role = ["修改密码", "发布消息", "查看主页"];
@@ -51,7 +52,7 @@ function factory(identity) {
 }
 
 /* 抽象工厂 */
-// 抽象工厂
+// 抽象工厂（基类）
 class MobilePhoneFactory {
   // 提供操作系统的接口
   createOS() {

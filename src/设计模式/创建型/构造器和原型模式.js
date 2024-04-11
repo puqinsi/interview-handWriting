@@ -1,3 +1,5 @@
+/* 目的：抽象每个对象实例的变与不变 */
+
 /* 构造器模式 */
 function Person1(name, age) {
   this.name = name;

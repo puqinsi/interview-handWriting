@@ -3,6 +3,7 @@ function isObject(obj) {
 }
 
 /* 深拷贝 */
+// 方法一：
 function deepClone(source, hash = new WeakMap()) {
   if (!isObject(source)) return source;
   if (hash.has(source)) return hash.get(source); // 查哈希表，已深拷贝对象直接返回
@@ -21,6 +22,9 @@ function deepClone(source, hash = new WeakMap()) {
 
   return target;
 }
+
+// 方法二：JSON.Parse(JSON.stringify(obj))
+// 该方法无法处理 function、无法处理正则等等——只有当你的对象是一个严格的 JSON 对象时，可以顺利使用这个方法。
 
 /* 浅拷贝 */
 function shallowClone(source) {
