@@ -2,7 +2,7 @@
 // 1. 返回一个迭代器，调用 next 方法执行一次，返回 {value: x, done: false}
 // 2. 最后 返回 {value: undefined, done: true}
 
-// es5
+// es5 生成器
 function createIterator(items) {
   let i = 0;
   const len = items.length;
@@ -14,13 +14,13 @@ function createIterator(items) {
 
       return {
         value,
-        done,
+        done
       };
-    },
+    }
   };
 }
 
-// es6
+// es6 生成器
 function* createIterator(items) {
   for (let i = 0; i < items.length; i++) {
     yield items[i];
@@ -30,12 +30,13 @@ function* createIterator(items) {
 /* 可迭代对象 */
 const collection = {
   items: [],
+  // 添加 Symbol.iterator 属性，该属性是个生成器返回一个迭代器，使该对象可迭代
   *[Symbol.iterator]() {
     len = this.items.length;
     for (let i = 0; i < len; i++) {
       yield this.items[i];
     }
-  },
+  }
 };
 
 collection.items.push(1);

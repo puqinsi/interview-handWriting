@@ -1,24 +1,24 @@
 // 核心：定义好观察者的接收方法（本例：update），目标对象收集观察者，然后统一通知观察者（调用定义好的观察者接收方法）
 // 对象和对象之间的关系
 // 定义一个目标对象
-class Subject {
+class Publisher {
   constructor() {
-    this.observerList = [];
+    this.observers = [];
   }
 
   add(observer) {
-    this.observerList.push(observer);
+    this.observers.push(observer);
   }
 
   remove(observer) {
-    this.observerList = this.observerList.filter(item => item !== observer);
+    this.observers = this.observers.filter(item => item !== observer);
   }
 
   notify(...args) {
     //通知所有观察者
-    this.observerList.forEach(item => {
+    this.observers.forEach(observer => {
       // 调用接收通知的方法（相当于开放出去的接口）
-      item.update(...args);
+      observer.update(...args);
     });
   }
 }
@@ -31,7 +31,7 @@ class Observer {
 
   update(...args) {
     // 根据目标发送的通知做处理
-    console.log(`my name is:${this.name}`);
+    console.log(`${this.name} update`);
   }
 }
 
@@ -41,3 +41,5 @@ let obs2 = new Observer("observer2");
 sub.add(obs1);
 sub.add(obs2);
 sub.notify();
+
+/* Publisher 和 Observer 作为基类，实践中可以通过继承该基类，根据需求完善功能 */
