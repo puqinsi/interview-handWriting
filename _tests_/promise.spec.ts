@@ -14,6 +14,7 @@ describe("Promise", () => {
     describe("then", () => {
       // 2.1 实现 then basic
       it("then basic", () => {
+        vi.useFakeTimers();
         // 第一个参数 resolve 回调
         const p1 = new MyPromise((resolve: any) => {
           resolve("resolve");
@@ -23,6 +24,8 @@ describe("Promise", () => {
         p1.then((resolveVal: any) => {
           result = resolveVal;
         });
+
+        vi.advanceTimersByTime(0);
         expect(result).toBe("resolve");
 
         // 第二个参数 reject 回调
@@ -34,11 +37,14 @@ describe("Promise", () => {
         p2.then(null, (rejectVal: any) => {
           reject = rejectVal;
         });
+
+        vi.advanceTimersByTime(0);
         expect(reject).toBe("reject");
       });
 
       // 2.2 then 方法只会执行先完成的处理函数的回调
       it("then cb only run one", () => {
+        vi.useFakeTimers();
         const p = new MyPromise((resolve: any, reject: any) => {
           resolve("resolve");
           reject("reject");
@@ -53,6 +59,7 @@ describe("Promise", () => {
         });
         p.then(resolveCb, rejectCb);
 
+        vi.advanceTimersByTime(0);
         expect(resolve).toBe("resolve");
         expect(reject).toBe(undefined);
         expect(resolveCb).toHaveBeenCalled();
@@ -79,7 +86,7 @@ describe("Promise", () => {
         });
         p.then(resolveCb, rejectCb);
 
-        vi.advanceTimersByTime(500);
+        vi.advanceTimersByTime(501);
         expect(resolve).toBe("resolve");
         expect(reject).toBe(undefined);
         expect(resolveCb).toHaveBeenCalled();
@@ -91,6 +98,7 @@ describe("Promise", () => {
     describe("catch", () => {
       // 3.1 catch basic
       it("catch basic", () => {
+        vi.useFakeTimers();
         // 第一个参数 resolve 回调
         const p1 = new MyPromise((resolve, reject: any) => {
           reject("reject");
@@ -100,6 +108,8 @@ describe("Promise", () => {
         p1.catch((rejectVal: any) => {
           result = rejectVal;
         });
+
+        vi.advanceTimersByTime(0);
         expect(result).toBe("reject");
       });
 
@@ -119,7 +129,7 @@ describe("Promise", () => {
           result = rejectVal;
         });
 
-        vi.advanceTimersByTime(500);
+        vi.advanceTimersByTime(501);
         expect(result).toBe("reject");
       });
     });
@@ -127,6 +137,7 @@ describe("Promise", () => {
     // 4. 创建已处理的 promise
     describe("create processed state", () => {
       it("create FulFilled state", () => {
+        vi.useFakeTimers();
         const p = MyPromise.resolve("resolve");
 
         let result;
@@ -134,10 +145,12 @@ describe("Promise", () => {
           result = resolveVal;
         });
 
+        vi.advanceTimersByTime(0);
         expect(result).toBe("resolve");
       });
 
       it("create Rejected state", () => {
+        vi.useFakeTimers();
         const p = MyPromise.reject("reject");
 
         let result;
@@ -155,6 +168,7 @@ describe("Promise", () => {
         });
         p.catch(rejectCb1);
 
+        vi.advanceTimersByTime(0);
         expect(result).toBe("reject");
         expect(reject).toBe("reject");
         expect(resolveCb).not.toHaveBeenCalled();
@@ -165,6 +179,7 @@ describe("Promise", () => {
 
     // 5. 捕获执行器错误
     test("catch executor error", () => {
+      vi.useFakeTimers();
       const p = new MyPromise((resolve: any, reject: any) => {
         throw new Error("something error");
       });
@@ -174,6 +189,7 @@ describe("Promise", () => {
         result = value;
       });
 
+      vi.advanceTimersByTime(0);
       expect(result.message).toBe("something error");
     });
   });
@@ -181,6 +197,7 @@ describe("Promise", () => {
   /* 复合功能 */
   // 串联的 Promise
   describe("series Promise", () => {
+    vi.useFakeTimers();
     // 串联 & 无返回
     describe("series basic", () => {
       // 1. then -> then
@@ -196,6 +213,7 @@ describe("Promise", () => {
           result2 = "result2";
         });
 
+        vi.advanceTimersByTime(1);
         expect(result1).toBe("result1");
         expect(result2).toBe("result2");
       });
@@ -217,7 +235,7 @@ describe("Promise", () => {
           result2 = "result2";
         });
 
-        vi.advanceTimersByTime(500);
+        vi.advanceTimersByTime(502);
         expect(result1).toBe("result1");
         expect(result2).toBe("result2");
       });
@@ -247,13 +265,14 @@ describe("Promise", () => {
           result2 = value;
         });
 
-        vi.advanceTimersByTime(500);
+        vi.advanceTimersByTime(502);
         expect(result1).toBe("result1");
         expect(result2).toBe("result2");
       });
 
       // 2. catch -> then
       it("catch chain then", () => {
+        vi.useFakeTimers();
         const p: any = new MyPromise((resolve: any, reject: any) => {
           reject();
         });
@@ -265,12 +284,55 @@ describe("Promise", () => {
           result2 = "resolve";
         });
 
+        vi.advanceTimersByTime(1);
         expect(result1).toBe("error");
         expect(result2).toBe("resolve");
       });
 
+      // 2+. catch -> catch
+      it("catch chain catch", () => {
+        vi.useFakeTimers();
+        const p: any = new MyPromise((resolve: any, reject: any) => {
+          reject();
+        });
+
+        let result1, result2;
+        p.catch(() => {
+          result1 = "error";
+        }).catch(() => {
+          result2 = "resolve";
+        });
+
+        vi.advanceTimersByTime(1);
+        expect(result1).toBe("error");
+        expect(result2).toBe(undefined);
+      });
+
+      // 2++. then no error -> catch
+      it("catch thenProcess no error", () => {
+        vi.useFakeTimers();
+        const p: any = new MyPromise((resolve: any, reject: any) => {
+          reject("error");
+        });
+
+        let result1, result2: any;
+        const p1 = p
+          .then(() => {
+            result1 = "result1";
+          })
+          .catch((err: any) => {
+            result2 = err;
+          });
+
+        vi.advanceTimersByTime(1);
+        expect(result1).toBe(undefined);
+        expect(result2).toBe("error");
+        expect(p).not.toBe(p1);
+      });
+
       // 3. then error -> catch
       it("catch thenProcess error", () => {
+        vi.useFakeTimers();
         const p: any = new MyPromise((resolve: any) => {
           resolve();
         });
@@ -285,6 +347,7 @@ describe("Promise", () => {
             result2 = err;
           });
 
+        vi.advanceTimersByTime(1);
         expect(result1).toBe("result1");
         expect(result2.message).toBe("2");
         expect(p).not.toBe(p1);
@@ -292,6 +355,7 @@ describe("Promise", () => {
 
       // 4. catch error -> catch
       it("catch catchProcess error", () => {
+        vi.useFakeTimers();
         const p1: any = new MyPromise((resolve: any, reject: any) => {
           reject();
         });
@@ -306,6 +370,7 @@ describe("Promise", () => {
             result2 = err;
           });
 
+        vi.advanceTimersByTime(1);
         expect(result1).toBe("error1");
         expect(result2.message).toBe("error2");
         expect(p1).not.toBe(p2);
@@ -328,6 +393,7 @@ describe("Promise", () => {
           result2 = value;
         });
 
+        vi.advanceTimersByTime(1);
         expect(result1).toBe(1);
         expect(result2).toBe(2);
       });
@@ -346,6 +412,7 @@ describe("Promise", () => {
           result2 = value;
         });
 
+        vi.advanceTimersByTime(1);
         expect(result1).toBe(1);
         expect(result2).toBe(2);
       });
@@ -369,7 +436,9 @@ describe("Promise", () => {
           result2 = value;
         });
 
+        vi.advanceTimersByTime(1);
         expect(result1).toBe(1);
+        vi.advanceTimersByTime(1);
         expect(result2).toBe(2);
       });
 
@@ -388,11 +457,12 @@ describe("Promise", () => {
           result1 = value;
           return p2;
         }).catch((value: any) => {
-          console.log("catch-------", value);
           result2 = value;
         });
 
+        vi.advanceTimersByTime(1);
         expect(result1).toBe(1);
+        vi.advanceTimersByTime(1);
         expect(result2).toBe(2);
       });
     });
@@ -400,6 +470,7 @@ describe("Promise", () => {
 
   // 响应多个 Promise
   describe("react multiple promise", () => {
+    vi.useFakeTimers();
     describe("all", () => {
       it("all watched promise Fulfilled return resolved", () => {
         const p1 = new MyPromise((resolve: any, reject: any) => {
@@ -421,11 +492,11 @@ describe("Promise", () => {
           result = value;
         });
 
+        vi.advanceTimersByTime(1);
         expect(result).toStrictEqual([1, 2, 3]);
       });
 
       it("all watched async promise Fulfilled return resolved", () => {
-        vi.useFakeTimers();
         const p1 = new MyPromise((resolve: any, reject: any) => {
           resolve(1);
         });
@@ -447,7 +518,7 @@ describe("Promise", () => {
           result = value;
         });
 
-        vi.advanceTimersByTime(500);
+        vi.advanceTimersByTime(510);
         expect(result).toStrictEqual([1, 2, 3]);
       });
 
@@ -471,6 +542,7 @@ describe("Promise", () => {
           result = value;
         });
 
+        vi.advanceTimersByTime(1);
         expect(result).toStrictEqual(3);
       });
 
@@ -499,7 +571,7 @@ describe("Promise", () => {
           result = value;
         });
 
-        vi.advanceTimersByTime(500);
+        vi.advanceTimersByTime(501);
         expect(result).toStrictEqual(3);
       });
     });
@@ -534,6 +606,7 @@ describe("Promise", () => {
           }
         );
 
+        vi.advanceTimersByTime(1);
         expect(resolveValue).toStrictEqual(1);
         expect(rejectValue).toStrictEqual(undefined);
       });
@@ -566,6 +639,7 @@ describe("Promise", () => {
           }
         );
 
+        vi.advanceTimersByTime(1);
         expect(resolveValue).toStrictEqual(undefined);
         expect(rejectValue).toStrictEqual(1);
       });
@@ -601,7 +675,7 @@ describe("Promise", () => {
           }
         );
 
-        vi.advanceTimersByTime(500);
+        vi.advanceTimersByTime(502);
         expect(resolveValue).toStrictEqual(2);
         expect(rejectValue).toStrictEqual(undefined);
       });

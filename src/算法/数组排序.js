@@ -58,6 +58,7 @@ function insertSort(arr) {
 // console.log("插入排序：", insertSort(arr));
 
 /* 归并排序 */
+// 时间复杂度 O(nlog(n))
 function mergeSort(arr) {
   const len = arr.length;
   if (len === 1) {
@@ -98,6 +99,79 @@ function mergeArr(arr1, arr2) {
   return res;
 }
 
-console.log("归并排序：", mergeSort(arr));
+// console.log("归并排序：", mergeSort(arr));
 
-/* 插入排序 */
+/* 快速排序1 */
+// 平均时间复杂度 O(nlog(n))
+function quickSort1(arr, left = 0, right = arr.length - 1) {
+  if (arr.length <= 1) return arr;
+  const lineIndex = partition(arr, left, right);
+  if (left < lineIndex - 1) {
+    quickSort1(arr, left, lineIndex - 1);
+  }
+
+  if (lineIndex < right) {
+    quickSort1(arr, lineIndex, right);
+  }
+
+  return arr;
+}
+
+function partition(arr, left, right) {
+  const baseIndex = Math.floor((left + right) / 2);
+  const baseValue = arr[baseIndex];
+  let i = left;
+  let j = right;
+  while (i <= j) {
+    while (arr[i] < baseValue) {
+      i++;
+    }
+    while (arr[j] > baseValue) {
+      j--;
+    }
+
+    if (i <= j) {
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      i++;
+      j--;
+    }
+  }
+
+  return i;
+}
+
+console.log("快速排序1：", quickSort1(arr));
+
+/* 快速排序2 */
+// 核心：把数组按照基准数，分成大于基准数和小于基准数的两个子序列，两个子序列里重复同样操作
+// 最后把子序列拼成完整数组。
+function quickSort2(arr) {
+  const len = arr.length;
+  if (len <= 1) return arr;
+
+  const left = [];
+  const right = [];
+  const base = arr[0];
+  // 注意从 1 开始
+  for (let i = 1; i < len; i++) {
+    const current = arr[i];
+    count++;
+    if (current >= base) {
+      left.push(current);
+    } else {
+      right.push(current);
+    }
+  }
+
+  return [...quickSort2(left), base, ...quickSort2(right)];
+}
+
+console.log("快速排序2：", quickSort2(arr));
+
+/* 内置方法 */
+// 从小到大
+arr.sort();
+// arr.sort((x,y)=>x-y);
+
+// 从大到小
+arr.sort((x, y) => y - x);
