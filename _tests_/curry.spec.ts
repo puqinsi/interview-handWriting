@@ -1,4 +1,4 @@
-import { curry1, curry2, curry3 } from "../src/curry.js";
+import { curry1, curry2, curry3 } from "../src/小功能/curry.js";
 
 describe("curry", () => {
   it("certain lens of fn args", () => {
@@ -47,7 +47,8 @@ describe("curry", () => {
     const result2 = fn2(1)(2, 3);
     const fn3: any = curry3(add);
     const result3 = fn3(1, 2, 3);
-    // 不能全等
+
+    // 不能全等，利用类型判断取值
     expect(result1 == 6).toBe(true);
     expect(result2 == 6).toBe(true);
     expect(result3 == 6).toBe(true);
