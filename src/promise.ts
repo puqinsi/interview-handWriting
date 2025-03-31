@@ -163,7 +163,7 @@ function createReturnPromise(resolveCb: any, rejectCb: any, instance: any) {
       const callback = handleCallBack.bind(instance, rejectCb, resolve, reject);
       trackCallBack(CallBackTypes.REJECT, callback, instance);
     } else {
-      // 如果没有拒绝处理程序，把错误往下传递
+      // 注意：如果没有拒绝处理程序，把错误往下传递
       const callback = () => {
         const { settledValue } = instance;
         reject(settledValue);

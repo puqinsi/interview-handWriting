@@ -35,7 +35,7 @@ class Observer {
   }
 }
 
-let sub = new Subject();
+let sub = new Publisher();
 let obs1 = new Observer("observer1");
 let obs2 = new Observer("observer2");
 sub.add(obs1);

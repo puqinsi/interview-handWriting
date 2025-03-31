@@ -65,10 +65,27 @@ function permute2(list) {
   return result;
 }
 
+// 方法三：最简单，最不好想到
+function permute3(list, prev = []) {
+  let result = [];
+  if (list.length === 0) return result;
+
+  list.forEach((item, index) => {
+    const current = [...prev, item];
+    result.push(current);
+
+    const currentResult = permute3(list.slice(index + 1), current);
+    result = [...result, ...currentResult];
+  });
+
+  return result;
+}
+
 // const list = [1, 2, 3];
 // const result1 = permute(list);
 // const result2 = permute2(list);
-// console.log(result1, result2);
+// const result3 = permute3(list);
+// console.log(result1, result2, result3);
 
 /* 组合 */
 // 题目描述：给定一组不含重复元素的整数数组 nums，返回该数组所有可能的子集（幂集）。
@@ -121,6 +138,25 @@ function subsets2(list) {
     result.push([value]);
     result.push([]);
   }
+
+  return result;
+}
+
+// 方法三 最简单，最不好想到
+function subsets3(list) {
+  const result = [];
+  if (list.length === 0) return result;
+
+  list.forEach(item => {
+    const otherList = subsets3(list.filter(i => i !== item));
+    if (otherList.length) {
+      otherList.forEach(i => {
+        result.push([item, ...i]);
+      });
+    } else {
+      result.push([item]);
+    }
+  });
 
   return result;
 }

@@ -1,14 +1,8 @@
 /* 柯里化 */
-// 1. 处理函数 fn 的参数长度固定。核心：判断参数长度，参数累加
-// export function curry1(fn: any, ...args: any[]) {
-//   // 处理函数参数定长
-//   if (args.length >= fn.length) {
-//     return fn(...args);
-//   } else {
-//     return (...args1: any[]) => curry1(fn, ...args.concat(args1));
-//   }
-// }
+// 一种将多参数函数转换为一系列单参数函数的技术。
+// 通过柯里化，可以将一个接收多个参数的函数分解为多个接收单个参数的函数，每次调用返回一个新的函数，直到所有参数都被传递完毕，最终返回结果。
 
+// 1. 处理函数 fn 的参数长度固定。核心：判断参数长度，参数累加
 export function curry1(fn: any) {
   return function next(...args: any[]): any {
     if (args.length >= fn.length) {
@@ -58,8 +52,9 @@ export function curry3(fn: any) {
     return next;
   }
 
+  // 两个都可以，借助取值，来返回结果
   next.toString = () => result;
-  next.valueOf = () => result;
+  // next.valueOf = () => result;
 
   return next;
 }
