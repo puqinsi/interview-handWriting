@@ -2,6 +2,7 @@
 
 const arr = [5, 1, 2, 4, 3];
 /* 冒泡排序 */
+// 核心：相邻两个元素依次做比较，交换数值，先排好最后一位。
 // 最小时间复杂度：O(n)，平均时间复杂度：O(n^2)
 function bubbleSort(arr) {
   const len = arr.length;
@@ -25,6 +26,7 @@ function bubbleSort(arr) {
 // console.log(bubbleSort(arr));
 
 /* 选择排序 */
+// 核心：每个元素和后面其他元素依次做比较，交换数值，先排好第一位。
 // 时间复杂度 O(n^2)
 function selectSort(arr) {
   const len = arr.length;
@@ -41,6 +43,7 @@ function selectSort(arr) {
 // console.log(selectSort(arr));
 
 /* 插入排序 */
+// 核心：先前面的元素局部排序，后面的元素再与前面的排好序的元素作比较（局部向前冒泡），插入到相应位置。
 // 最小时间复杂度 O(n)，平均时间复杂度 O(n^2);
 function insertSort(arr) {
   const len = arr.length;
@@ -57,13 +60,41 @@ function insertSort(arr) {
 
 // console.log("插入排序：", insertSort(arr));
 
+/* 希尔排序 */
+// 核心：插入排序 + 间隔
+function hillSort(arr) {
+  const len = arr.length;
+  let n = 1;
+  // 计算间隔
+  while (n < len / 3) {
+    n = n * 3 + 1;
+  }
+
+  // 逐步缩小间隔
+  while (n > 0) {
+    // 插入排序
+    for (let i = n; i < len; i++) {
+      for (let j = i; j >= n; j -= n) {
+        const current = arr[j];
+        const previous = arr[j - n];
+        if (current < previous) {
+          [arr[j - n], arr[j]] = [current, previous];
+        } else {
+          break;
+        }
+      }
+    }
+
+    n = (n - 1) / 3;
+  }
+  return arr;
+}
+
 /* 归并排序 */
 // 时间复杂度 O(nlog(n))
 function mergeSort(arr) {
   const len = arr.length;
-  if (len === 1) {
-    return arr;
-  }
+  if (len <= 1) return arr;
 
   const mid = Math.floor(len / 2);
   const left = arr.slice(0, mid);
@@ -72,37 +103,30 @@ function mergeSort(arr) {
   return mergeArr(mergeSort(left), mergeSort(right));
 }
 
-function mergeArr(arr1, arr2) {
+function mergeArr(leftArr, rightArr) {
   let i = 0,
     j = 0;
-  const res = [];
-  const len1 = arr1.length;
-  const len2 = arr2.length;
-  while (i < len1 && j < len2) {
-    if (arr1[i] < arr2[j]) {
-      res.push(arr1[i]);
+  const result = [];
+  const leftLen = leftArr.length;
+  const rightLen = rightArr.length;
+
+  while (i < leftLen && j < rightLen) {
+    if (leftArr[i] < rightArr[j]) {
+      result.push(leftArr[i]);
       i++;
     } else {
-      res.push(arr2[j]);
+      result.push(rightArr[j]);
       j++;
     }
   }
 
-  if (i < len1) {
-    return res.concat(arr1.slice(i));
-  }
-
-  if (j < len2) {
-    return res.concat(arr2.slice(j));
-  }
-
-  return res;
+  return result.concat(leftArr.slice(i)).concat(rightArr.slice(j));
 }
 
 // console.log("归并排序：", mergeSort(arr));
 
-/* 快速排序1 */
-// 平均时间复杂度 O(nlog(n))
+/* 快速排序：原地交换 */
+// 平均时间复杂度 O(nlog(n)) 空间复杂度 O(log(n))
 function quickSort1(arr, left = 0, right = arr.length - 1) {
   if (arr.length <= 1) return arr;
   const lineIndex = partition(arr, left, right);
@@ -142,9 +166,9 @@ function partition(arr, left, right) {
 
 console.log("快速排序1：", quickSort1(arr));
 
-/* 快速排序2 */
-// 核心：把数组按照基准数，分成大于基准数和小于基准数的两个子序列，两个子序列里重复同样操作
-// 最后把子序列拼成完整数组。
+/* 快速排序：非原地实现 */
+// 核心：把数组按照基准数，分成大于基准数和小于基准数的两个子序列，两个子序列里重复同样操作，最后把子序列拼成完整数组。
+// 平均时间复杂度 O(nlog(n)) 空间复杂度 O(n)
 function quickSort2(arr) {
   const len = arr.length;
   if (len <= 1) return arr;
@@ -155,8 +179,7 @@ function quickSort2(arr) {
   // 注意从 1 开始
   for (let i = 1; i < len; i++) {
     const current = arr[i];
-    count++;
-    if (current >= base) {
+    if (current <= base) {
       left.push(current);
     } else {
       right.push(current);

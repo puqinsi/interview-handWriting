@@ -14,17 +14,16 @@ console.log(flatten(arr));
 
 // 2. 递归
 function flatten2(arr) {
-  let brr = [];
-  for (let i = 0; i < arr.length; i++) {
-    const item = arr[i];
+  let result = [];
+  arr.forEach(item => {
     if (Array.isArray(item)) {
-      brr = brr.concat(flatten2(item));
+      result = result.concat(flatten2(item));
     } else {
-      brr.push(item);
+      result.push(item);
     }
-  }
+  });
 
-  return brr;
+  return result;
 }
 
 console.log(flatten2(arr));

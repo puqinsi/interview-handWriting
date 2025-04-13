@@ -26,7 +26,7 @@ b.right = f;
 //   a       b
 // c   d   e   f
 
-// 1. 先序遍历-递归
+// 1. 先序遍历-递归 DFS
 function preTraverse1(root) {
   if (!root) {
     return;

@@ -4,9 +4,10 @@
  * @return {string} type 返回具体的类型名称【小写】
  */
 
-function isTypeOf(data) {
+function myTypeOf(data) {
   // return Object.prototype.toString.call(data).replace(/\[object (\w+)\]/, '$1').toLowerCase()
+  // [object String]
   return Object.prototype.toString.call(data).slice(8, -1).toLowerCase();
 }
 
-console.log(isTypeOf("a"));
+console.log(myTypeOf("a"));

@@ -1,5 +1,5 @@
 function isObject(obj) {
-  return typeof obj === "object" && obj != null;
+  return typeof obj === "object" && obj !== null;
 }
 
 /* 深拷贝 */
@@ -13,11 +13,8 @@ function deepClone(source, hash = new WeakMap()) {
 
   // 使用Reflect.ownKeys() 获取所有的键值，同时包括 Symbol
   Reflect.ownKeys(source).forEach(key => {
-    if (isObject(source[key])) {
-      target[key] = deepClone(source[key], hash);
-    } else {
-      target[key] = source[key];
-    }
+    const value = source[key];
+    target[key] = isObject(value) ? deepClone(value, hash) : value;
   });
 
   return target;

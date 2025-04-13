@@ -2,7 +2,6 @@
 export class Stack {
   constructor() {
     this.value = [];
-    this.length = this.value.length;
   }
 
   add(val) {

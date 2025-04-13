@@ -25,7 +25,7 @@ export function curry1(fn: any) {
 //   };
 // }
 
-// 2. 不定长，但是需要最后一步无参数调用。核心：收集参数
+// 2. 不定长，但是需要最后一步无参数调用。核心：闭包收集参数
 export function curry2(fn: any) {
   const argArr: any[] = [];
 

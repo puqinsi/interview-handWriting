@@ -1,27 +1,29 @@
 /* 防抖 */
-// 间隔时间内只执行一次，并且间隔时间内再点击重新计时
+// 在事件被触发后，等待一定时间再执行回调。如果在等待时间内事件又被触发，则重新计时。
+
+// 第一次立即执行
+function debounce(fn, delay = 500) {
+  let lastTime = 0;
+  return function (...args) {
+    const now = Date.now();
+    if (now - lastTime > delay) {
+      fn.apply(this, args);
+    }
+
+    lastTime = now;
+  };
+}
+
 // 第一次不立即执行
 function debounce(fn, delay = 500) {
-  let timer;
-  return (...args) => {
+  let timer = null;
+  return function (...args) {
     if (timer) {
       clearTimeout(timer);
     }
     timer = setTimeout(() => {
-      fn(...args);
+      fn.apple(this, args);
+      timer = null;
     }, delay);
-  };
-}
-
-// 第一次基本上立即执行
-function debounce(fn, delay = 500) {
-  let previous = new Date().getTime();
-  return (...args) => {
-    const now = new Date().getTime();
-    if (now - previous > delay) {
-      fn(...args);
-    }
-
-    previous = now;
   };
 }
