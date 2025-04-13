@@ -15,17 +15,15 @@ const enum CallBackTypes {
 }
 
 class MyPromise {
-  private executor: Executor; // 执行器,用于创建未处理的 Promise
   private settledValue: any; // 处理程序的返回值
   private callBackMap: Map<string, any>; // 存储回调函数，异步时处理函数会调用
   private promiseState: any; // Promise 状态 未处理：Pending（进行中）；已处理：FulFilled 已完成，Rejected 已失败；
   constructor(executor: Executor) {
-    this.executor = executor;
     this.promiseState = StateTypes.PENDING;
     this.callBackMap = new Map();
 
     try {
-      this.executor(this.resolve.bind(this), this.reject.bind(this));
+      executor(this.resolve.bind(this), this.reject.bind(this));
     } catch (error: any) {
       this.reject(error);
     }

@@ -31,7 +31,7 @@ function twoSum2(array, target) {
   for (let i = 0; i < len; i++) {
     const num1 = array[i];
     valueToKeyMap.set(num1, i);
-    const num2 = target - num1; //
+    const num2 = target - num1;
     if (valueToKeyMap.has(num2)) {
       result.push([num1, num2]);
     }

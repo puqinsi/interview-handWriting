@@ -17,12 +17,12 @@ function isValid(str) {
     const char = str[i];
     if (Object.keys(leftToRight).includes(char)) {
       // 如果是左括号
-      // 将其对应的有括号推入栈中
+      // 将其对应的右括号推入栈中
       stack.push(leftToRight[char]);
     } else {
       // 如果不是左括号，期待是右括号
       // 栈为空说明没有左括号，不符合要求
-      // 如果栈顶元素与当前元素不一样，说明字符串不对称，不符合要求
+      // 如果栈顶元素（栈顶是最新添加的）与当前元素不一样，说明字符串不对称，不符合要求
       if (!stack.length || char !== stack.pop()) {
         return false;
       }
@@ -37,11 +37,12 @@ function isValid(str) {
 // console.log("str1", isValid(str1));
 // console.log("str2", isValid(str2));
 
-/* 栈进阶-每日温度 */
+/* 栈进阶-每日温度（难理解） */
 // 题目描述: 根据每日气温列表，请重新生成一个列表，对应位置的输出是需要再等待多久温度才会升高超过该日的天数。如果之后都不会升高，请在该位置用 0 来代替。
 
 // 例如，给定一个列表 temperatures = [73, 74, 75, 71, 69, 72, 76, 73]，你的输出应该是 [1, 1, 4, 2, 1, 1, 0, 0]。
 // 提示：气温 列表长度的范围是 [1, 30000]。每个气温的值的均为华氏度，都是在 [30, 100] 范围内的整数。
+// 方法一：栈
 function dailyTemperatures(tList) {
   const len = tList.length;
   // 温度递减的下标栈（递减栈）
@@ -58,6 +59,16 @@ function dailyTemperatures(tList) {
   }
 
   return res;
+}
+
+// 方法二：直接遍历查找
+function dailyTemperatures2(list) {
+  const result = list.map((current, index) => {
+    const nextIndex = list.slice(index + 1).findIndex(next => next > current);
+    return nextIndex === -1 ? 0 : nextIndex + 1;
+  });
+
+  return result;
 }
 
 // const temperatures = [73, 74, 75, 71, 69, 72, 76, 73];
@@ -112,3 +123,31 @@ class MinStack {
 // minStack.pop();
 // console.log(minStack.top());
 // console.log(minStack.getMin());
+
+/* 数字转 2-9 进制 */
+// 方法一：栈
+function mulBase(num, base) {
+  const stack = [];
+  while (num > 0) {
+    stack.push(num % base);
+    num = Math.floor(num / base);
+  }
+
+  let converted = "";
+  while (stack.length > 0) {
+    converted += stack.pop();
+  }
+
+  return converted;
+}
+
+// 方法二：不考虑数据结构
+function mulBase2(num, base) {
+  const arr = [];
+  while (num > 0) {
+    arr.unshift(num % base);
+    num = Math.floor(num / base);
+  }
+
+  return arr.join("");
+}
