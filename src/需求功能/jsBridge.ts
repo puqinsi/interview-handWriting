@@ -31,21 +31,20 @@ class JsBridge {
    */
   invoke(name: string, params?: Payload["params"]): Promise<any> {
     return new Promise((resolve, reject) => {
-      const payload: Payload = {
-        params,
-        successCB(res) {
-          resolve(res);
-        },
-        failCB(err) {
-          reject(err);
-        }
-      };
-
       const method = this.methodsConfig[name];
       if (!method) return reject(`未找到 ${name} 方法`);
       if (!method.isHandlerEnv()) return reject(`当前环境不支持 ${name} 方法`);
 
       try {
+        const payload: Payload = {
+          params,
+          successCB(res) {
+            resolve(res);
+          },
+          failCB(err) {
+            reject(err);
+          }
+        };
         method.handler(payload);
         console.log(`调用 ${name} 方法`);
       } catch (err) {
