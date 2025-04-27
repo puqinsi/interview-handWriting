@@ -6,14 +6,14 @@
 Object.defineProperty(Object, "myCreate", {
   value(proto, ...args) {
     if (proto) {
-      // 1
+      // 1 创建一个新对象
       const obj = new Object(...args);
-      // 2
+      // 2 设置对象原型
       Object.setPrototypeOf(obj, proto);
-      // 3
+      // 3 返回对象
       return obj;
     } else {
       return new Object();
     }
-  },
+  }
 });

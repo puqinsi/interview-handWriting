@@ -7,12 +7,10 @@ Function.prototype.myBind = function (context, ...args) {
   }
 
   const fn = this;
-  const fnBind = function (...currentArgs) {
+  // 返回一个新函数
+  return (...currentArgs) => {
     return fn.apply(context, args.concat(currentArgs));
   };
-
-  // 返回一个新函数
-  return fnBind;
 };
 
 /* demo */

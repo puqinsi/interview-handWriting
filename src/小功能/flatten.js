@@ -28,7 +28,7 @@ function flatten2(arr) {
 
 console.log(flatten2(arr));
 
-// 3. reduce
+// 3. 递归+reduce
 function flatten3(arr, result = []) {
   return arr.reduce((brr, current) => {
     if (Array.isArray(current)) {

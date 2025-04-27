@@ -91,6 +91,7 @@ function hillSort(arr) {
 }
 
 /* 归并排序 */
+// 核心：把数组分成左右两半，左右两半再递归，把左右两半通过大小对比合并到一起。
 // 时间复杂度 O(nlog(n))
 function mergeSort(arr) {
   const len = arr.length;
